@@ -1,15 +1,14 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 use bevy_cosmic_edit::*;
 
 #[derive(Resource)]
 struct TextChangeTimer(pub Timer);
 
-fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 
     let attrs =
         AttrsOwned::new(Attrs::new().color(bevy_color_to_cosmic(Color::rgb(0.27, 0.27, 0.27))));
-    let primary_window = windows.single();
 
     let editor = commands
         .spawn(CosmicEditBundle {
@@ -17,11 +16,6 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
             fill_color: FillColor::default(),
             background_image: CosmicBackground::default(),
             attrs: CosmicAttrs(attrs.clone()),
-            metrics: CosmicMetrics {
-                font_size: 16.,
-                line_height: 16.,
-                scale_factor: primary_window.scale_factor() as f32,
-            },
             max_chars: CosmicMaxChars(15),
             max_lines: CosmicMaxLines(1),
             text_setter: CosmicText::OneStyle("BANANA IS THE CODEWORD!".into()),

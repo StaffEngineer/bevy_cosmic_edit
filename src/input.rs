@@ -207,7 +207,14 @@ pub(crate) fn input_mouse(
                     );
                 }
                 MouseScrollUnit::Pixel => {
-                    let line_height = editor.0.buffer().metrics().line_height;
+                    let line_height = editor
+                        .0
+                        .buffer()
+                        .line_heights()
+                        .iter()
+                        .next()
+                        .unwrap()
+                        .clone();
                     editor.0.action(
                         &mut font_system.0,
                         Action::Scroll {

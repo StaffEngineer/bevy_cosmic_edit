@@ -11,9 +11,7 @@ pub use cosmic_text::{
     Action, Attrs, AttrsOwned, Color as CosmicColor, Cursor, Edit, Family, Style as FontStyle,
     Weight as FontWeight,
 };
-use cosmic_text::{
-    AttrsList, Buffer, BufferLine, Editor, FontSystem, Metrics, Shaping, SwashCache,
-};
+use cosmic_text::{AttrsList, Buffer, BufferLine, Editor, FontSystem, Shaping, SwashCache};
 use cursor::{change_cursor, hover_sprites, hover_ui};
 pub use cursor::{TextHoverIn, TextHoverOut};
 use input::{input_kb, input_mouse, undo_redo, ClickTimer};
@@ -73,26 +71,6 @@ pub enum CosmicTextPosition {
 
 #[derive(Event, Debug)]
 pub struct CosmicTextChanged(pub (Entity, String));
-
-// TODO docs
-const DEFAULT_SCALE_PLACEHOLDER: f32 = 0.696969;
-
-#[derive(Clone, Component)]
-pub struct CosmicMetrics {
-    pub font_size: f32,
-    pub line_height: f32,
-    pub scale_factor: f32,
-}
-
-impl Default for CosmicMetrics {
-    fn default() -> Self {
-        Self {
-            font_size: 12.,
-            line_height: 12.,
-            scale_factor: DEFAULT_SCALE_PLACEHOLDER,
-        }
-    }
-}
 
 #[derive(Resource)]
 pub struct CosmicFontSystem(pub FontSystem);
@@ -228,7 +206,6 @@ pub struct CosmicEditBundle {
     // cosmic bits
     pub fill_color: FillColor,
     pub text_position: CosmicTextPosition,
-    pub metrics: CosmicMetrics,
     pub attrs: CosmicAttrs,
     pub background_image: CosmicBackground,
     pub max_lines: CosmicMaxLines,
@@ -246,7 +223,6 @@ impl Default for CosmicEditBundle {
         CosmicEditBundle {
             fill_color: Default::default(),
             text_position: Default::default(),
-            metrics: Default::default(),
             attrs: Default::default(),
             background_image: Default::default(),
             max_lines: Default::default(),
@@ -460,15 +436,12 @@ fn init_history(
 
 /// Adds the font system to each editor when added
 fn cosmic_editor_builder(
-    mut added_editors: Query<(Entity, &CosmicMetrics), Added<CosmicText>>,
+    mut added_editors: Query<Entity, Added<CosmicText>>,
     mut font_system: ResMut<CosmicFontSystem>,
     mut commands: Commands,
 ) {
-    for (entity, metrics) in added_editors.iter_mut() {
-        let mut buffer = Buffer::new(
-            &mut font_system.0,
-            Metrics::new(metrics.font_size, metrics.line_height).scale(metrics.scale_factor),
-        );
+    for entity in added_editors.iter_mut() {
+        let mut buffer = Buffer::new(&mut font_system.0);
         // buffer.set_wrap(&mut font_system.0, cosmic_text::Wrap::None);
         buffer.set_redraw(true);
         let mut editor = Editor::new(buffer);
@@ -679,14 +652,14 @@ pub fn get_text_spans(
 
 fn get_text_size(buffer: &Buffer) -> (f32, f32) {
     if buffer.layout_runs().count() == 0 {
-        return (0., buffer.metrics().line_height);
+        return (0., *buffer.line_heights().iter().next().unwrap());
     }
     let width = buffer
         .layout_runs()
         .map(|run| run.line_w)
         .reduce(f32::max)
         .unwrap();
-    let height = buffer.layout_runs().count() as f32 * buffer.metrics().line_height;
+    let height = buffer.layout_runs().count() as f32 * buffer.line_heights().iter().next().unwrap();
     (width, height)
 }
 

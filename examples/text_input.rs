@@ -1,23 +1,20 @@
-use bevy::{
-    prelude::*,
-    window::{PresentMode, PrimaryWindow},
-};
+use bevy::{prelude::*, window::PresentMode};
 use bevy_cosmic_edit::*;
+use cosmic_text::LineHeight;
 
-fn create_editable_widget(commands: &mut Commands, scale_factor: f32, text: String) -> Entity {
-    let attrs =
-        AttrsOwned::new(Attrs::new().color(bevy_color_to_cosmic(Color::hex("4d4d4d").unwrap())));
+fn create_editable_widget(commands: &mut Commands, text: String) -> Entity {
+    let attrs = AttrsOwned::new(
+        Attrs::new()
+            .color(bevy_color_to_cosmic(Color::hex("4d4d4d").unwrap()))
+            .size(18.)
+            .line_height(LineHeight::Proportional(1.2)),
+    );
     let placeholder_attrs =
         AttrsOwned::new(Attrs::new().color(bevy_color_to_cosmic(Color::hex("#e6e6e6").unwrap())));
     let editor = commands
         .spawn((
             CosmicEditBundle {
                 attrs: CosmicAttrs(attrs.clone()),
-                metrics: CosmicMetrics {
-                    font_size: 18.,
-                    line_height: 18. * 1.2,
-                    scale_factor,
-                },
                 max_lines: CosmicMaxLines(1),
                 text_setter: CosmicText::OneStyle(text),
                 text_position: CosmicTextPosition::Left { padding: 20 },
@@ -49,19 +46,18 @@ fn create_editable_widget(commands: &mut Commands, scale_factor: f32, text: Stri
     editor
 }
 
-fn create_readonly_widget(commands: &mut Commands, scale_factor: f32, text: String) -> Entity {
-    let attrs =
-        AttrsOwned::new(Attrs::new().color(bevy_color_to_cosmic(Color::hex("4d4d4d").unwrap())));
+fn create_readonly_widget(commands: &mut Commands, text: String) -> Entity {
+    let attrs = AttrsOwned::new(
+        Attrs::new()
+            .color(bevy_color_to_cosmic(Color::hex("4d4d4d").unwrap()))
+            .size(18.)
+            .line_height(LineHeight::Proportional(1.2)),
+    );
 
     let editor = commands
         .spawn((
             CosmicEditBundle {
                 attrs: CosmicAttrs(attrs.clone()),
-                metrics: CosmicMetrics {
-                    font_size: 18.,
-                    line_height: 18. * 1.2,
-                    scale_factor,
-                },
                 text_setter: CosmicText::OneStyle(text),
                 text_position: CosmicTextPosition::Left { padding: 20 },
                 mode: CosmicMode::AutoHeight,
@@ -90,14 +86,9 @@ fn create_readonly_widget(commands: &mut Commands, scale_factor: f32, text: Stri
     editor
 }
 
-fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
-    let primary_window = windows.single();
-    let editor = create_editable_widget(
-        &mut commands,
-        primary_window.scale_factor() as f32,
-        "".to_string(),
-    );
+    let editor = create_editable_widget(&mut commands, "".to_string());
     commands.insert_resource(Focus(Some(editor)));
 }
 
@@ -106,10 +97,8 @@ fn handle_enter(
     keys: Res<Input<KeyCode>>,
     mut query_dest: Query<(Entity, &CosmicSource)>,
     mut query_source: Query<(Entity, &CosmicEditor, &CosmicMode)>,
-    windows: Query<&Window, With<PrimaryWindow>>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
-        let scale_factor = windows.single().scale_factor() as f32;
         for (entity, editor, mode) in query_source.iter_mut() {
             // Remove UI elements
             for (dest_entity, source) in query_dest.iter_mut() {
@@ -121,10 +110,10 @@ fn handle_enter(
             let text = editor.get_text();
             commands.entity(entity).despawn_recursive();
             if *mode == CosmicMode::AutoHeight {
-                let editor = create_editable_widget(&mut commands, scale_factor, text);
+                let editor = create_editable_widget(&mut commands, text);
                 commands.insert_resource(Focus(Some(editor)));
             } else {
-                let editor = create_readonly_widget(&mut commands, scale_factor, text);
+                let editor = create_readonly_widget(&mut commands, text);
                 commands.insert_resource(Focus(Some(editor)));
             };
         }

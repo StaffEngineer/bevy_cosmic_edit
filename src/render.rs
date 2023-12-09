@@ -6,14 +6,13 @@ use bevy::{
     utils::HashMap,
     window::{PrimaryWindow, WindowScaleFactorChanged},
 };
-use cosmic_text::{Affinity, Edit, Metrics, SwashCache};
+use cosmic_text::{Affinity, AttrsOwned, Edit, SwashCache};
 use image::{imageops::FilterType, GenericImageView};
 
 use crate::{
     get_text_size, get_x_offset_center, get_y_offset_center, CosmicAttrs, CosmicBackground,
-    CosmicEditor, CosmicFontSystem, CosmicMetrics, CosmicMode, CosmicSource, CosmicText,
-    CosmicTextPosition, FillColor, Focus, PasswordInput, PlaceholderAttrs, PlaceholderText,
-    ReadOnly, XOffset, DEFAULT_SCALE_PLACEHOLDER,
+    CosmicEditor, CosmicFontSystem, CosmicMode, CosmicSource, CosmicText, CosmicTextPosition,
+    FillColor, Focus, PasswordInput, PlaceholderAttrs, PlaceholderText, ReadOnly, XOffset,
 };
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -463,35 +462,33 @@ pub(crate) fn hide_inactive_or_readonly_cursor(
 
 pub(crate) fn set_initial_scale(
     window_q: Query<&Window, With<PrimaryWindow>>,
-    mut cosmic_query: Query<&mut CosmicMetrics, Added<CosmicMetrics>>,
+    mut cosmic_query: Query<&mut CosmicAttrs, Added<CosmicAttrs>>,
+    mut placeholder_query: Query<&mut PlaceholderAttrs, Added<PlaceholderAttrs>>,
 ) {
     let scale = window_q.single().scale_factor() as f32;
 
-    for mut metrics in &mut cosmic_query.iter_mut() {
-        if metrics.scale_factor != DEFAULT_SCALE_PLACEHOLDER {
-            continue;
-        }
-
-        metrics.scale_factor = scale;
+    for mut attrs in &mut cosmic_query.iter_mut() {
+        attrs.0 = AttrsOwned::new(attrs.0.as_attrs().scale(scale));
+    }
+    for mut attrs in &mut placeholder_query.iter_mut() {
+        attrs.0 = AttrsOwned::new(attrs.0.as_attrs().scale(scale));
     }
 }
 
 pub(crate) fn on_scale_factor_change(
     mut scale_factor_changed: EventReader<WindowScaleFactorChanged>,
-    mut cosmic_query: Query<(&mut CosmicEditor, &CosmicMetrics, &mut XOffset)>,
-    mut font_system: ResMut<CosmicFontSystem>,
+    mut cosmic_query: Query<(&mut CosmicEditor, &mut CosmicAttrs, &mut XOffset)>,
+    mut placeholder_query: Query<&mut PlaceholderAttrs>,
 ) {
     if !scale_factor_changed.is_empty() {
         let new_scale_factor = scale_factor_changed.read().last().unwrap().scale_factor as f32;
-        for (mut editor, metrics, mut x_offset) in &mut cosmic_query.iter_mut() {
-            let font_system = &mut font_system.0;
-            let metrics =
-                Metrics::new(metrics.font_size, metrics.line_height).scale(new_scale_factor);
-
-            editor.0.buffer_mut().set_metrics(font_system, metrics);
+        for (mut editor, mut attrs, mut x_offset) in &mut cosmic_query.iter_mut() {
+            attrs.0 = AttrsOwned::new(attrs.0.as_attrs().scale(new_scale_factor));
             editor.0.buffer_mut().set_redraw(true);
-
             *x_offset = XOffset(None);
+        }
+        for mut attrs in &mut placeholder_query.iter_mut() {
+            attrs.0 = AttrsOwned::new(attrs.0.as_attrs().scale(new_scale_factor));
         }
     }
 }

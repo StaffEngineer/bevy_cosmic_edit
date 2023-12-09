@@ -16,18 +16,12 @@ struct PasswordTag;
 #[derive(Component)]
 struct DisplayTag;
 
-fn setup(mut commands: Commands, window: Query<&Window, With<PrimaryWindow>>) {
-    let window = window.single();
-
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 
     let login_editor = commands
         .spawn(CosmicEditBundle {
             max_lines: CosmicMaxLines(1),
-            metrics: CosmicMetrics {
-                scale_factor: window.scale_factor() as f32,
-                ..default()
-            },
             sprite_bundle: SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(300.0, 50.0)),
@@ -50,10 +44,6 @@ fn setup(mut commands: Commands, window: Query<&Window, With<PrimaryWindow>>) {
     let password_editor = commands
         .spawn(CosmicEditBundle {
             max_lines: CosmicMaxLines(1),
-            metrics: CosmicMetrics {
-                scale_factor: window.scale_factor() as f32,
-                ..default()
-            },
             ..default()
         })
         .insert(CosmicEditPlaceholderBundle {
@@ -69,12 +59,6 @@ fn setup(mut commands: Commands, window: Query<&Window, With<PrimaryWindow>>) {
     let submit_editor = commands
         .spawn(CosmicEditBundle {
             max_lines: CosmicMaxLines(1),
-            metrics: CosmicMetrics {
-                font_size: 25.0,
-                line_height: 25.0,
-                scale_factor: window.scale_factor() as f32,
-                ..default()
-            },
             attrs: CosmicAttrs(AttrsOwned::new(
                 Attrs::new().color(bevy_color_to_cosmic(Color::WHITE)),
             )),
@@ -86,13 +70,7 @@ fn setup(mut commands: Commands, window: Query<&Window, With<PrimaryWindow>>) {
         .id();
 
     let display_editor = commands
-        .spawn(CosmicEditBundle {
-            metrics: CosmicMetrics {
-                scale_factor: window.scale_factor() as f32,
-                ..default()
-            },
-            ..default()
-        })
+        .spawn(CosmicEditBundle::default())
         .insert(CosmicEditPlaceholderBundle {
             text_setter: PlaceholderText(CosmicText::OneStyle("Output".into())),
             attrs: PlaceholderAttrs(AttrsOwned::new(

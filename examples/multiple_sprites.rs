@@ -14,15 +14,9 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
     let mut attrs = Attrs::new();
     attrs = attrs.family(Family::Name("Victor Mono"));
     attrs = attrs.color(bevy_color_to_cosmic(Color::PURPLE));
-    let metrics = CosmicMetrics {
-        font_size: 14.,
-        line_height: 18.,
-        scale_factor: primary_window.scale_factor() as f32,
-    };
 
     let cosmic_edit_1 = (CosmicEditBundle {
         attrs: CosmicAttrs(AttrsOwned::new(attrs)),
-        metrics: metrics.clone(),
         text_position: CosmicTextPosition::Center,
         fill_color: FillColor(Color::ALICE_BLUE),
         text_setter: CosmicText::OneStyle("😀😀😀 x => y".to_string()),
@@ -42,7 +36,6 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
 
     let cosmic_edit_2 = (CosmicEditBundle {
         attrs: CosmicAttrs(AttrsOwned::new(attrs)),
-        metrics,
         text_position: CosmicTextPosition::Center,
         fill_color: FillColor(Color::GRAY.with_a(0.5)),
         text_setter: CosmicText::OneStyle("Widget_2. Click on me".to_string()),

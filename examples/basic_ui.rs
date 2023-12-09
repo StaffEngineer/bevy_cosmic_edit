@@ -1,11 +1,10 @@
-use bevy::{core_pipeline::clear_color::ClearColorConfig, prelude::*, window::PrimaryWindow};
+use bevy::{core_pipeline::clear_color::ClearColorConfig, prelude::*};
 use bevy_cosmic_edit::{
     AttrsOwned, CosmicAttrs, CosmicEditBundle, CosmicEditPlugin, CosmicEditor, CosmicFontConfig,
-    CosmicMetrics, CosmicSource, CosmicText, CosmicTextPosition, Focus,
+    CosmicSource, CosmicText, CosmicTextPosition, Focus,
 };
 
-fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
-    let primary_window = windows.single();
+fn setup(mut commands: Commands) {
     let camera_bundle = Camera2dBundle {
         camera_2d: Camera2d {
             clear_color: ClearColorConfig::Custom(Color::WHITE),
@@ -18,15 +17,8 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
     attrs = attrs.family(cosmic_text::Family::Name("Victor Mono"));
     attrs = attrs.color(cosmic_text::Color::rgb(0x94, 0x00, 0xD3));
 
-    let scale_factor = primary_window.scale_factor() as f32;
-
     let cosmic_edit = commands
         .spawn(CosmicEditBundle {
-            metrics: CosmicMetrics {
-                font_size: 14.,
-                line_height: 18.,
-                scale_factor,
-            },
             text_position: CosmicTextPosition::Center,
             attrs: CosmicAttrs(AttrsOwned::new(attrs)),
             text_setter: CosmicText::OneStyle("😀😀😀 x => y".to_string()),

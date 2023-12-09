@@ -1,9 +1,9 @@
 #![allow(clippy::type_complexity)]
 
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 use bevy_cosmic_edit::*;
 
-fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
     let root = commands
         .spawn(NodeBundle {
@@ -16,7 +16,6 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
             ..default()
         })
         .id();
-    let primary_window = windows.single();
 
     let attrs = Attrs::new();
     let serif_attrs = attrs.family(Family::Serif);
@@ -24,6 +23,7 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
     let comic_attrs = attrs.family(Family::Name("Comic Neue"));
     let lines: Vec<Vec<(String, AttrsOwned)>> = vec![
         vec![
+            (String::from("Big"), AttrsOwned::new(attrs.size(48.))),
             (
                 String::from("B"),
                 AttrsOwned::new(attrs.weight(FontWeight::BOLD)),
@@ -53,6 +53,7 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
                 String::from("Sans-Serif Bold "),
                 AttrsOwned::new(attrs.weight(FontWeight::BOLD)),
             ),
+            (String::from("small"), AttrsOwned::new(attrs.size(10.))),
             (
                 String::from("Sans-Serif Italic "),
                 AttrsOwned::new(attrs.style(FontStyle::Italic)),
@@ -81,8 +82,10 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
                 ),
             ),
         ],
+        vec![(String::from("small"), AttrsOwned::new(attrs.size(10.)))],
         vec![
             (String::from("Mono Normal "), AttrsOwned::new(mono_attrs)),
+            (String::from("huge"), AttrsOwned::new(attrs.size(100.))),
             (
                 String::from("Mono Bold "),
                 AttrsOwned::new(mono_attrs.weight(FontWeight::BOLD)),
@@ -211,11 +214,6 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
         .spawn(CosmicEditBundle {
             text_position: bevy_cosmic_edit::CosmicTextPosition::Center,
             attrs: CosmicAttrs(AttrsOwned::new(attrs)),
-            metrics: CosmicMetrics {
-                font_size: 18.,
-                line_height: 22.,
-                scale_factor: primary_window.scale_factor() as f32,
-            },
             text_setter: CosmicText::MultiStyle(lines),
             ..default()
         })
@@ -228,13 +226,8 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
     let cosmic_edit_2 = commands
         .spawn(CosmicEditBundle {
             attrs: CosmicAttrs(AttrsOwned::new(attrs_2)),
-            metrics: CosmicMetrics {
-                font_size: 28.,
-                line_height: 36.,
-                scale_factor: primary_window.scale_factor() as f32,
-            },
             text_position: CosmicTextPosition::Center,
-            text_setter: CosmicText::OneStyle("Widget 2.\nClick on me =>".to_string()),
+            text_setter: CosmicText::OneStyle("Widget 2.\n Click on me =>".to_string()),
             ..default()
         })
         .id();

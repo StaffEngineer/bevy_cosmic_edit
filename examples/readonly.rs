@@ -1,8 +1,7 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 use bevy_cosmic_edit::*;
 
-fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
-    let primary_window = windows.single();
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
     let root = commands
         .spawn(NodeBundle {
@@ -25,11 +24,6 @@ fn setup(mut commands: Commands, windows: Query<&Window, With<PrimaryWindow>>) {
         .spawn(CosmicEditBundle {
             attrs: CosmicAttrs(AttrsOwned::new(attrs)),
             text_position: CosmicTextPosition::Center,
-            metrics: CosmicMetrics {
-                font_size: 14.,
-                line_height: 18.,
-                scale_factor: primary_window.scale_factor() as f32,
-            },
             text_setter: CosmicText::OneStyle("😀😀😀 x => y\nRead only widget".to_string()),
             ..default()
         })
