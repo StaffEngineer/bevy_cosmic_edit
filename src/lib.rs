@@ -652,14 +652,18 @@ pub fn get_text_spans(
 
 fn get_text_size(buffer: &Buffer) -> (f32, f32) {
     if buffer.layout_runs().count() == 0 {
-        return (0., *buffer.line_heights().iter().next().unwrap());
+        return (0., *buffer.line_heights().iter().next().unwrap_or(&18.));
     }
     let width = buffer
         .layout_runs()
         .map(|run| run.line_w)
         .reduce(f32::max)
         .unwrap();
-    let height = buffer.layout_runs().count() as f32 * buffer.line_heights().iter().next().unwrap();
+    let mut height = 0.;
+    let line_height = buffer.line_heights();
+    for i in 0..buffer.layout_runs().count() {
+        height += line_height[i]
+    }
     (width, height)
 }
 

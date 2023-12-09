@@ -213,7 +213,7 @@ pub(crate) fn input_mouse(
                         .line_heights()
                         .iter()
                         .next()
-                        .unwrap()
+                        .unwrap_or(&18.)
                         .clone();
                     editor.0.action(
                         &mut font_system.0,
