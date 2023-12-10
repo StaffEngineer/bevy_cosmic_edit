@@ -227,7 +227,7 @@ fn setup(mut commands: Commands) {
         .spawn(CosmicEditBundle {
             attrs: CosmicAttrs(AttrsOwned::new(attrs_2)),
             text_position: CosmicTextPosition::Center,
-            text_setter: CosmicText::OneStyle("Widget 2.\n Click on me =>".to_string()),
+            text_setter: CosmicText::OneStyle("Widget 2.\nClick on me =>".to_string()),
             ..default()
         })
         .id();

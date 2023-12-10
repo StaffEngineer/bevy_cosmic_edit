@@ -11,7 +11,7 @@ pub use cosmic_text::{
     Action, Attrs, AttrsOwned, Color as CosmicColor, Cursor, Edit, Family, Style as FontStyle,
     Weight as FontWeight,
 };
-use cosmic_text::{AttrsList, Buffer, BufferLine, Editor, FontSystem, Shaping, SwashCache};
+use cosmic_text::{Buffer, Editor, FontSystem, Shaping, SwashCache};
 use cursor::{change_cursor, hover_sprites, hover_ui};
 pub use cursor::{TextHoverIn, TextHoverOut};
 use input::{input_kb, input_mouse, undo_redo, ClickTimer};
@@ -108,21 +108,22 @@ impl CosmicEditor {
                 editor.set_cursor(cursor);
             }
             CosmicText::MultiStyle(lines) => {
-                for line in lines {
-                    let mut line_text = String::new();
-                    let mut attrs_list = AttrsList::new(attrs.as_attrs());
-                    for (text, attrs) in line.iter() {
-                        let start = line_text.len();
-                        line_text.push_str(text);
-                        let end = line_text.len();
-                        attrs_list.add_span(start..end, attrs.as_attrs());
-                    }
-                    editor.buffer_mut().lines.push(BufferLine::new(
-                        line_text,
-                        attrs_list,
-                        Shaping::Advanced,
-                    ));
-                }
+                let converted_lines: Vec<_> = lines
+                    .iter()
+                    .flat_map(|line| {
+                        line.iter().map(|(s, attrs_owned)| {
+                            let s_ref: &str = &s;
+                            let attrs: Attrs = attrs_owned.as_attrs();
+                            (s_ref, attrs)
+                        })
+                    })
+                    .collect();
+                editor.buffer_mut().set_rich_text(
+                    font_system,
+                    converted_lines,
+                    attrs.as_attrs(),
+                    Shaping::Advanced,
+                );
             }
         }
         self
