@@ -11,7 +11,7 @@ pub use cosmic_text::{
     Action, Attrs, AttrsOwned, Color as CosmicColor, Cursor, Edit, Family, Style as FontStyle,
     Weight as FontWeight,
 };
-use cosmic_text::{Buffer, Editor, FontSystem, Shaping, SwashCache};
+use cosmic_text::{Buffer, Editor, FontSystem, Selection, Shaping, SwashCache};
 use cursor::{change_cursor, hover_sprites, hover_ui};
 pub use cursor::{TextHoverIn, TextHoverOut};
 use input::{input_kb, input_mouse, undo_redo, ClickTimer};
@@ -96,6 +96,7 @@ impl CosmicEditor {
         editor.buffer_mut().lines.clear();
         match text {
             CosmicText::OneStyle(text) => {
+                dbg!(editor.buffer_mut().scroll());
                 editor.buffer_mut().set_text(
                     font_system,
                     text.as_str(),
@@ -106,6 +107,7 @@ impl CosmicEditor {
                 cursor.line = editor.buffer_mut().lines.len() - 1;
                 cursor.index = editor.buffer_mut().lines[cursor.line].text().len();
                 editor.set_cursor(cursor);
+                editor.buffer_mut().set_redraw(true);
             }
             CosmicText::MultiStyle(lines) => {
                 let converted_lines: Vec<_> = lines
@@ -688,7 +690,7 @@ fn clear_inactive_selection(
 
     for (e, mut editor) in &mut cosmic_editor_q.iter_mut() {
         if e != active_editor.0.unwrap() {
-            editor.0.set_select_opt(None);
+            editor.0.set_selection(Selection::None);
         }
     }
 }

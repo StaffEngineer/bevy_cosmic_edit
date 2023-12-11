@@ -23,7 +23,7 @@ fn setup(mut commands: Commands) {
     let comic_attrs = attrs.family(Family::Name("Comic Neue"));
     let lines: Vec<Vec<(String, AttrsOwned)>> = vec![
         vec![
-            (String::from("Big"), AttrsOwned::new(attrs.size(48.))),
+            (String::from("Big"), AttrsOwned::new(attrs.font_size(48.))),
             (
                 String::from("B"),
                 AttrsOwned::new(attrs.weight(FontWeight::BOLD)),
@@ -53,7 +53,7 @@ fn setup(mut commands: Commands) {
                 String::from("Sans-Serif Bold "),
                 AttrsOwned::new(attrs.weight(FontWeight::BOLD)),
             ),
-            (String::from("small"), AttrsOwned::new(attrs.size(10.))),
+            (String::from("small"), AttrsOwned::new(attrs.font_size(10.))),
             (
                 String::from("Sans-Serif Italic "),
                 AttrsOwned::new(attrs.style(FontStyle::Italic)),
@@ -82,10 +82,10 @@ fn setup(mut commands: Commands) {
                 ),
             ),
         ],
-        vec![(String::from("small"), AttrsOwned::new(attrs.size(10.)))],
+        vec![(String::from("small"), AttrsOwned::new(attrs.font_size(10.)))],
         vec![
             (String::from("Mono Normal "), AttrsOwned::new(mono_attrs)),
-            (String::from("huge"), AttrsOwned::new(attrs.size(100.))),
+            (String::from("huge"), AttrsOwned::new(attrs.font_size(100.))),
             (
                 String::from("Mono Bold "),
                 AttrsOwned::new(mono_attrs.weight(FontWeight::BOLD)),

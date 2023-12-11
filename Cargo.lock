@@ -1224,7 +1224,7 @@ dependencies = [
 [[package]]
 name = "cosmic-text"
 version = "0.10.0"
-source = "git+https://github.com/TotalKrill/cosmic-text?rev=4a7dddf#4a7dddf15a012ca4b7ff5a090ab60aabe7561187"
+source = "git+https://github.com/nicoburns/cosmic-text?rev=16ff8d3#16ff8d305a970bd9baad2bb5b364a017372ef23c"
 dependencies = [
  "fontdb",
  "libm",

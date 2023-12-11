@@ -6,7 +6,7 @@ fn create_editable_widget(commands: &mut Commands, text: String) -> Entity {
     let attrs = AttrsOwned::new(
         Attrs::new()
             .color(bevy_color_to_cosmic(Color::hex("4d4d4d").unwrap()))
-            .size(18.)
+            .font_size(18.)
             .line_height(LineHeight::Proportional(1.2)),
     );
     let placeholder_attrs =
@@ -50,7 +50,7 @@ fn create_readonly_widget(commands: &mut Commands, text: String) -> Entity {
     let attrs = AttrsOwned::new(
         Attrs::new()
             .color(bevy_color_to_cosmic(Color::hex("4d4d4d").unwrap()))
-            .size(18.)
+            .font_size(18.)
             .line_height(LineHeight::Proportional(1.2)),
     );
 

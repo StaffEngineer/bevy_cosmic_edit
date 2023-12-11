@@ -6,7 +6,7 @@ use bevy::{
     utils::HashMap,
     window::{PrimaryWindow, WindowScaleFactorChanged},
 };
-use cosmic_text::{Affinity, AttrsOwned, Edit, SwashCache};
+use cosmic_text::{Affinity, AttrsOwned, Edit, Selection, SwashCache};
 use image::{imageops::FilterType, GenericImageView};
 
 use crate::{
@@ -525,7 +525,7 @@ pub(crate) fn hide_password_text(
 ) {
     for (entity, mut cosmic_editor, attrs, password) in editor_q.iter_mut() {
         let text = cosmic_editor.get_text();
-        let select_opt = cosmic_editor.0.select_opt();
+        let selection = cosmic_editor.0.selection();
         let mut cursor = cosmic_editor.0.cursor();
 
         if !text.is_empty() {
@@ -543,17 +543,18 @@ pub(crate) fn hide_password_text(
 
             let char_len = password.0.len_utf8();
 
-            let select_opt = match select_opt {
-                Some(mut select) => {
+            let selection = match selection {
+                Selection::Normal(mut select) => {
                     select.index *= char_len;
-                    Some(select)
+                    Selection::Normal(select)
                 }
-                None => None,
+                Selection::None => Selection::None,
+                Selection::Line(_) => todo!(),
             };
 
             cursor.index *= char_len;
 
-            cosmic_editor.0.set_select_opt(select_opt);
+            cosmic_editor.0.set_selection(selection);
 
             // Fixes stuck cursor on password inputs
             if let Some(active) = active_editor.0 {
@@ -585,12 +586,13 @@ pub(crate) fn restore_password_text(
                 let char_len = password.0.len_utf8();
 
                 let mut cursor = cosmic_editor.0.cursor();
-                let select_opt = match cosmic_editor.0.select_opt() {
-                    Some(mut select) => {
+                let selection = match cosmic_editor.0.selection() {
+                    Selection::Normal(mut select) => {
                         select.index /= char_len;
-                        Some(select)
+                        Selection::Normal(select)
                     }
-                    None => None,
+                    Selection::None => Selection::None,
+                    Selection::Line(_) => todo!(),
                 };
 
                 cursor.index /= char_len;
@@ -601,7 +603,7 @@ pub(crate) fn restore_password_text(
                     &mut font_system.0,
                 );
 
-                cosmic_editor.0.set_select_opt(select_opt);
+                cosmic_editor.0.set_selection(selection);
                 cosmic_editor.0.set_cursor(cursor);
             }
         }

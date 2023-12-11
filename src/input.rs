@@ -10,7 +10,7 @@ use bevy::{
     prelude::*,
     window::PrimaryWindow,
 };
-use cosmic_text::{Action, AttrsList, BufferLine, Cursor, Edit, Shaping};
+use cosmic_text::{Action, AttrsList, BufferLine, Cursor, Edit, Selection, Shaping};
 
 #[cfg(target_arch = "wasm32")]
 use js_sys::Promise;
@@ -113,10 +113,10 @@ pub(crate) fn input_mouse(
         let shift = keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]);
 
         // if shift key is pressed
-        let already_has_selection = editor.0.select_opt().is_some();
+        let already_has_selection = editor.0.selection() != Selection::None;
         if shift && !already_has_selection {
             let cursor = editor.0.cursor();
-            editor.0.set_select_opt(Some(cursor));
+            editor.0.set_selection(Selection::Normal(cursor));
         }
 
         let (padding_x, padding_y) = match text_position {
@@ -159,14 +159,14 @@ pub(crate) fn input_mouse(
                             // select word
                             editor.0.action(&mut font_system.0, Action::LeftWord);
                             let cursor = editor.0.cursor();
-                            editor.0.set_select_opt(Some(cursor));
+                            editor.0.set_selection(Selection::Normal(cursor));
                             editor.0.action(&mut font_system.0, Action::RightWord);
                         }
                         3 => {
                             // select paragraph
                             editor.0.action(&mut font_system.0, Action::ParagraphStart);
                             let cursor = editor.0.cursor();
-                            editor.0.set_select_opt(Some(cursor));
+                            editor.0.set_selection(Selection::Normal(cursor));
                             editor.0.action(&mut font_system.0, Action::ParagraphEnd);
                         }
                         _ => {}
@@ -290,10 +290,10 @@ pub(crate) fn input_kb(
         let option = keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight]);
 
         // if shift key is pressed
-        let already_has_selection = editor.0.select_opt().is_some();
+        let already_has_selection = editor.0.selection() != Selection::None;
         if shift && !already_has_selection {
             let cursor = editor.0.cursor();
-            editor.0.set_select_opt(Some(cursor));
+            editor.0.set_selection(Selection::Normal(cursor));
         }
 
         #[cfg(target_os = "macos")]
@@ -304,14 +304,14 @@ pub(crate) fn input_kb(
         if should_jump && keys.just_pressed(KeyCode::Left) {
             editor.0.action(&mut font_system.0, Action::PreviousWord);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
         if should_jump && keys.just_pressed(KeyCode::Right) {
             editor.0.action(&mut font_system.0, Action::NextWord);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
@@ -321,7 +321,7 @@ pub(crate) fn input_kb(
             // TODO: fix upstream
             editor.0.buffer_mut().set_redraw(true);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
@@ -331,7 +331,7 @@ pub(crate) fn input_kb(
             // TODO: fix upstream
             editor.0.buffer_mut().set_redraw(true);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
@@ -339,38 +339,38 @@ pub(crate) fn input_kb(
         if keys.just_pressed(KeyCode::Left) {
             editor.0.action(&mut font_system.0, Action::Left);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
         if keys.just_pressed(KeyCode::Right) {
             editor.0.action(&mut font_system.0, Action::Right);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
         if keys.just_pressed(KeyCode::Up) {
             editor.0.action(&mut font_system.0, Action::Up);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
         if keys.just_pressed(KeyCode::Down) {
             editor.0.action(&mut font_system.0, Action::Down);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
 
         if keys.just_pressed(KeyCode::Back) & !readonly {
             // fix for issue #8
-            if let Some(select) = editor.0.select_opt() {
+            if let Selection::Normal(select) = editor.0.selection() {
                 if editor.0.cursor().line == select.line && editor.0.cursor().index == select.index
                 {
-                    editor.0.set_select_opt(None);
+                    editor.0.set_selection(Selection::None);
                 }
             }
             *is_deleting = true;
@@ -389,7 +389,7 @@ pub(crate) fn input_kb(
         if command && keys.just_pressed(KeyCode::A) {
             editor.0.action(&mut font_system.0, Action::BufferEnd);
             let current_cursor = editor.0.cursor();
-            editor.0.set_select_opt(Some(Cursor {
+            editor.0.set_selection(Selection::Normal(Cursor {
                 line: 0,
                 index: 0,
                 affinity: current_cursor.affinity,
@@ -400,28 +400,28 @@ pub(crate) fn input_kb(
         if keys.just_pressed(KeyCode::Home) {
             editor.0.action(&mut font_system.0, Action::Home);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
         if keys.just_pressed(KeyCode::End) {
             editor.0.action(&mut font_system.0, Action::End);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
         if keys.just_pressed(KeyCode::PageUp) {
             editor.0.action(&mut font_system.0, Action::PageUp);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
         if keys.just_pressed(KeyCode::PageDown) {
             editor.0.action(&mut font_system.0, Action::PageDown);
             if !shift {
-                editor.0.set_select_opt(None);
+                editor.0.set_selection(Selection::None);
             }
             return;
         }
@@ -675,7 +675,7 @@ pub(crate) fn undo_redo(
             ));
         }
         editor.0.set_cursor(current_edit.cursor);
-        editor.0.set_select_opt(None); // prevent auto selection of redo-inserted text
+        editor.0.set_selection(Selection::None); // prevent auto selection of redo-inserted text
         editor.0.buffer_mut().set_redraw(true);
         edit_history.current_edit = index;
         evw_changed.send(CosmicTextChanged((entity, editor.get_text())));
