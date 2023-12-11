@@ -96,18 +96,12 @@ impl CosmicEditor {
         editor.buffer_mut().lines.clear();
         match text {
             CosmicText::OneStyle(text) => {
-                dbg!(editor.buffer_mut().scroll());
                 editor.buffer_mut().set_text(
                     font_system,
                     text.as_str(),
                     attrs.as_attrs(),
                     Shaping::Advanced,
                 );
-                let mut cursor = editor.cursor();
-                cursor.line = editor.buffer_mut().lines.len() - 1;
-                cursor.index = editor.buffer_mut().lines[cursor.line].text().len();
-                editor.set_cursor(cursor);
-                editor.buffer_mut().set_redraw(true);
             }
             CosmicText::MultiStyle(lines) => {
                 let converted_lines: Vec<_> = lines
