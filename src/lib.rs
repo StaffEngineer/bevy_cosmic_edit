@@ -3,6 +3,7 @@
 mod cursor;
 mod input;
 mod render;
+mod shader;
 
 use std::{collections::VecDeque, path::PathBuf};
 
@@ -22,9 +23,12 @@ use input::{poll_wasm_paste, WasmPaste, WasmPasteAsyncChannel};
 use render::{
     blink_cursor, freeze_cursor_blink, hide_inactive_or_readonly_cursor, hide_password_text,
     on_scale_factor_change, restore_password_text, restore_placeholder_text, set_initial_scale,
-    show_placeholder, CosmicPadding, CosmicRenderSet, CosmicWidgetSize, CursorBlinkTimer,
-    CursorVisibility, PasswordValues, SwashCacheState,
+    show_placeholder, CosmicPadding, CosmicWidgetSize, CursorBlinkTimer, CursorVisibility,
+    PasswordValues, SwashCacheState,
 };
+
+pub use render::CosmicRenderSet;
+pub use shader::{add_cosmic_material, CosmicMaterial2d, CosmicMaterial2dPlugin};
 
 #[cfg(feature = "multicam")]
 #[derive(Component)]
