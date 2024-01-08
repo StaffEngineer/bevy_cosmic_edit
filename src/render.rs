@@ -323,8 +323,15 @@ pub(crate) fn set_size_from_ui(
     }
 }
 
-pub(crate) fn _set_size_from_mesh() {
-    // TODO
+pub(crate) fn set_size_from_transform(
+    mut source_q: Query<&mut Sprite, With<CosmicEditor>>,
+    dest_q: Query<(&Transform, &CosmicSource), With<Handle<Mesh>>>,
+) {
+    for (transform, source) in dest_q.iter() {
+        if let Ok(mut sprite) = source_q.get_mut(source.0) {
+            sprite.custom_size = Some(transform.scale.truncate() * 64.0);
+        }
+    }
 }
 
 fn draw_pixel(

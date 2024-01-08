@@ -333,6 +333,7 @@ impl Plugin for CosmicEditPlugin {
         let render_systems = (
             render::new_image_from_default.in_set(CosmicRenderSet::Setup),
             render::set_size_from_ui.in_set(CosmicRenderSet::Setup),
+            render::set_size_from_transform.in_set(CosmicRenderSet::Setup),
             render::cosmic_reshape.in_set(CosmicRenderSet::Shaping),
             render::cosmic_widget_size.in_set(CosmicRenderSet::Sizing),
             render::cosmic_buffer_size.in_set(CosmicRenderSet::Sizing),
