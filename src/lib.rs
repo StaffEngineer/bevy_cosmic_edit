@@ -7,9 +7,13 @@ mod input;
 mod layout;
 mod render;
 
+mod plugins;
+pub use plugins::*;
+
 use std::{path::PathBuf, time::Duration};
 
 use bevy::{prelude::*, transform::TransformSystem};
+
 use buffer::{
     add_font_system, set_editor_redraw, set_initial_scale, set_redraw, swap_target_handle,
 };
@@ -192,6 +196,9 @@ impl Default for CosmicFontConfig {
     }
 }
 
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct KbInput;
+
 /// Plugin struct that adds systems and initializes resources related to cosmic edit functionality.
 #[derive(Default)]
 pub struct CosmicEditPlugin {
@@ -224,7 +231,10 @@ impl Plugin for CosmicEditPlugin {
                 .chain(),
         )
         .add_systems(PreUpdate, (input_mouse,).chain())
-        .add_systems(Update, (input_kb, reshape, blink_cursor).chain())
+        .add_systems(
+            Update,
+            (input_kb, reshape, blink_cursor).chain().in_set(KbInput),
+        )
         .add_systems(
             PostUpdate,
             (
@@ -264,7 +274,16 @@ impl Plugin for CosmicEditPlugin {
             app.insert_resource(WasmPasteAsyncChannel { tx, rx })
                 .add_systems(Update, poll_wasm_paste);
         }
+
+        add_feature_plugins(app);
     }
+}
+
+fn add_feature_plugins(app: &mut App) -> &mut App {
+    #[cfg(feature = "placeholder")]
+    app.add_plugins(plugins::placeholder::PlaceholderPlugin);
+
+    app
 }
 
 fn create_cosmic_font_system(cosmic_font_config: CosmicFontConfig) -> FontSystem {

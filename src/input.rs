@@ -310,7 +310,6 @@ pub(crate) fn input_kb(
         }
         if should_jump && keys.just_pressed(KeyCode::Home) {
             editor.action(&mut font_system.0, Action::Motion(Motion::BufferStart));
-            editor.set_redraw(true);
             if !shift {
                 editor.set_selection(Selection::None);
             }
@@ -318,7 +317,6 @@ pub(crate) fn input_kb(
         }
         if should_jump && keys.just_pressed(KeyCode::End) {
             editor.action(&mut font_system.0, Action::Motion(Motion::BufferEnd));
-            editor.set_redraw(true);
             if !shift {
                 editor.set_selection(Selection::None);
             }
@@ -534,7 +532,6 @@ pub(crate) fn input_kb(
                     for c in b {
                         let c: char = (*c).into();
                         editor.action(&mut font_system.0, Action::Insert(c));
-                        editor.set_redraw(true);
                     }
                 }
             }

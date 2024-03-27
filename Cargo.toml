@@ -13,6 +13,7 @@ exclude = ["assets/*"]
 
 [features]
 multicam = []
+placeholder = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -43,8 +44,12 @@ arboard = "3.2.0"
 js-sys = "0.3.67"
 wasm-bindgen = "0.2.92"
 wasm-bindgen-futures = "0.4.42"
-web-sys = { version = "0.3.67", features = ["Clipboard", "Navigator", "Window"] }
+web-sys = { version = "0.3.67", features = [
+  "Clipboard",
+  "Navigator",
+  "Window",
+] }
 
 [dev-dependencies]
 insta = "1.29.0"
-util = {path="./util/"}
+util = { path = "./util/" }

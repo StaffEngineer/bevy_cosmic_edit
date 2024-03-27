@@ -15,8 +15,6 @@ impl<'s, 'r> CosmicBuffer {
         Self(Buffer::new(font_system, metrics))
     }
 
-    // TODO: Set redraw when setting text
-
     // Das a lotta boilerplate just to hide the shaping argument
     pub fn with_text(
         mut self,
