@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::*;
 use bevy::prelude::*;
 use cosmic_text::{Edit, Editor};
@@ -34,7 +36,7 @@ pub(crate) fn add_editor_to_focused(
         let Ok(b) = q.get(e) else {
             return;
         };
-        let mut editor = Editor::new(b.0.clone());
+        let mut editor = Editor::new(Arc::clone(&b.0));
         editor.set_redraw(true);
         commands.entity(e).insert(CosmicEditor::new(editor));
     }
@@ -47,15 +49,17 @@ pub(crate) fn drop_editor_unfocused(
 ) {
     if active_editor.0.is_none() {
         for (e, mut b, ed) in q.iter_mut() {
-            b.lines = ed.with_buffer(|buf| buf.lines.clone());
-            b.set_redraw(true);
+            let buffer = Arc::make_mut(&mut b.0);
+            buffer.lines = ed.with_buffer(|buf| buf.lines.clone());
+            buffer.set_redraw(true);
             commands.entity(e).remove::<CosmicEditor>();
         }
     } else if let Some(focused) = active_editor.0 {
         for (e, mut b, ed) in q.iter_mut() {
             if e != focused {
-                b.lines = ed.with_buffer(|buf| buf.lines.clone());
-                b.set_redraw(true);
+                let buffer = Arc::make_mut(&mut b.0);
+                buffer.lines = ed.with_buffer(|buf| buf.lines.clone());
+                buffer.set_redraw(true);
                 commands.entity(e).remove::<CosmicEditor>();
             }
         }

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::*;
 use bevy::{prelude::*, window::PrimaryWindow};
 
@@ -55,18 +57,18 @@ impl BufferExtras for Buffer {
 
 /// Component wrapper for [`Buffer`]
 #[derive(Component, Deref, DerefMut)]
-pub struct CosmicBuffer(pub Buffer);
+pub struct CosmicBuffer(pub Arc<Buffer>);
 
 impl Default for CosmicBuffer {
     fn default() -> Self {
-        CosmicBuffer(Buffer::new_empty(Metrics::new(20., 20.)))
+        CosmicBuffer(Arc::new(Buffer::new_empty(Metrics::new(20., 20.))))
     }
 }
 
 impl<'s, 'r> CosmicBuffer {
     /// Create a new buffer with a font system
     pub fn new(font_system: &mut FontSystem, metrics: Metrics) -> Self {
-        Self(Buffer::new(font_system, metrics))
+        Self(Arc::new(Buffer::new(font_system, metrics)))
     }
 
     // Das a lotta boilerplate just to hide the shaping argument
@@ -77,7 +79,7 @@ impl<'s, 'r> CosmicBuffer {
         text: &'s str,
         attrs: Attrs<'r>,
     ) -> Self {
-        self.0.set_text(font_system, text, attrs, Shaping::Advanced);
+        Arc::<Buffer>::make_mut(&mut self.0).set_text(font_system, text, attrs, Shaping::Advanced);
         self
     }
 
@@ -93,8 +95,12 @@ impl<'s, 'r> CosmicBuffer {
     where
         I: IntoIterator<Item = (&'s str, Attrs<'r>)>,
     {
-        self.0
-            .set_rich_text(font_system, spans, attrs, Shaping::Advanced);
+        Arc::<Buffer>::make_mut(&mut self.0).set_rich_text(
+            font_system,
+            spans,
+            attrs,
+            Shaping::Advanced,
+        );
         self
     }
 
@@ -105,8 +111,9 @@ impl<'s, 'r> CosmicBuffer {
         text: &'s str,
         attrs: Attrs<'r>,
     ) -> &mut Self {
-        self.0.set_text(font_system, text, attrs, Shaping::Advanced);
-        self.set_redraw(true);
+        let buffer = Arc::make_mut(&mut self.0);
+        buffer.set_text(font_system, text, attrs, Shaping::Advanced);
+        buffer.set_redraw(true);
         self
     }
 
@@ -122,9 +129,9 @@ impl<'s, 'r> CosmicBuffer {
     where
         I: IntoIterator<Item = (&'s str, Attrs<'r>)>,
     {
-        self.0
-            .set_rich_text(font_system, spans, attrs, Shaping::Advanced);
-        self.set_redraw(true);
+        let buffer = Arc::make_mut(&mut self.0);
+        buffer.set_rich_text(font_system, spans, attrs, Shaping::Advanced);
+        buffer.set_redraw(true);
         self
     }
 
@@ -178,8 +185,9 @@ pub fn add_font_system(
         if !b.lines.is_empty() {
             continue;
         }
-        b.0.set_text(&mut font_system, "", Attrs::new(), Shaping::Advanced);
-        b.set_redraw(true);
+        let buffer = Arc::make_mut(&mut b.0);
+        buffer.set_text(&mut font_system, "", Attrs::new(), Shaping::Advanced);
+        buffer.set_redraw(true);
     }
 }
 
@@ -193,14 +201,16 @@ pub fn set_initial_scale(
 
     for mut b in &mut cosmic_query.iter_mut() {
         let m = b.metrics().scale(w_scale);
-        b.set_metrics(&mut font_system, m);
+        let buffer = Arc::make_mut(&mut b.0);
+        buffer.set_metrics(&mut font_system, m);
     }
 }
 
 /// Initialises new [`CosmicBuffer`] redraw flag to true
 pub fn set_redraw(mut q: Query<&mut CosmicBuffer, Added<CosmicBuffer>>) {
     for mut b in q.iter_mut() {
-        b.set_redraw(true);
+        let buffer = Arc::make_mut(&mut b.0);
+        buffer.set_redraw(true);
     }
 }
 

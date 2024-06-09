@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::*;
 use bevy::{prelude::*, render::render_resource::Extent3d};
 use cosmic_text::{Color, Edit, SwashCache};
@@ -215,7 +217,8 @@ fn render_texture(
                 font_color,
                 draw_closure,
             );
-            buffer.set_redraw(false);
+            let buffer_mut = Arc::make_mut(&mut buffer.0);
+            buffer_mut.set_redraw(false);
         }
 
         if let Some(prev_image) = images.get_mut(canvas) {
